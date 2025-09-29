@@ -26,7 +26,7 @@ from eval.coco_eval import evaluate_coco
 # -----------------------------
 def detect(
     source: str,
-    model: str = "yolov8n.pt",
+    model: str = "yolo11n.pt",
     out_dir: str = "results",
     realtime: bool = False
 ) -> List[Dict[str, Any]]:

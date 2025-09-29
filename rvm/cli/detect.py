@@ -5,7 +5,7 @@ from rvm.api import detect
 def main():
     parser = argparse.ArgumentParser(description="Run object detection")
     parser.add_argument("--source", required=True, help="Path to image, video or webcam index", default="0")
-    parser.add_argument("--model", default="yolov8n.pt", help="YOLO model weights")
+    parser.add_argument("--model", default="yolo11n.pt", help="YOLO model weights (e.g., yolo11n.pt, yolo11s.pt, yolo11m.pt, yolo11l.pt")
     parser.add_argument("--out", default="results", help="Output directory")
     parser.add_argument("--realtime", action="store_true", help="Enable real-time display for webcam")
     args = parser.parse_args()
