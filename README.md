@@ -9,7 +9,7 @@ If you are a student, researcher, or developer, you are welcome to contribute. F
 ---
 
 ## ✨ Features
-- **Object Detection** (YOLOv8 wrapper)  
+- **Object Detection** (YOLOv11 wrapper)  
 - **Image Segmentation** (SAM-lite or similar lightweight segmenter)  
 - **Marker / Barcode Detection** (ArUco or QR)  
 - **Unified Python API** for simple usage  
@@ -117,7 +117,7 @@ pip install -e .
 ## 🧑‍💻 Usage
 ### CLI Commands
 ```bash
-rvm-detect --source path_or_webcam --model yolov8n.pt --out results/
+rvm-detect --source path_or_webcam --model yolo11n.pt --out results/
 rvm-segment --source images_dir --out results/
 rvm-markers --source images_dir --out results/
 rvm-eval-coco --images images_dir --ann annotations.json --out reports/
