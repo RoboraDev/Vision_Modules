@@ -132,7 +132,7 @@ from rvm.api import detect
 
 results = detect(
     source="path/to/images_or_video",   # file, folder, or webcam index
-    model="yolov8n.pt",                 # YOLO model checkpoint
+    model="yolo11n.pt",                 # YOLO model checkpoint
     out_dir="results/"                  # output directory
 )
 print(results)
@@ -185,7 +185,7 @@ We provide simple demo scripts for quick testing:
 
 Example:
 ```bash
-python demos/detect_webcam.py --model yolov8n.pt
+python demos/detect_webcam.py --model yolo11n.pt
 ```
 
 ---
