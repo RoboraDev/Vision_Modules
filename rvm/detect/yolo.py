@@ -8,9 +8,10 @@ from rvm.core.types import Box
 
 
 class YOLODetector:
-    """Wrapper for YOLOv8 detection."""
+    """Wrapper for YOLOv11 detection."""
 
-    def __init__(self, model_path: str = "yolov8n.pt"):
+    def __init__(self, model_path: str = "yolo11n.pt"):
+        print(f"Loading YOLO model from {model_path}...")
         self.model = YOLO(model_path)
 
     def detect(self, image: np.ndarray) -> List[Box]:
