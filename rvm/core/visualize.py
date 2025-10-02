@@ -8,7 +8,7 @@ Functions:
 - draw_markers(image, markers)
 """
 
-import cv2
+import cv2 as cv
 import numpy as np
 from typing import List, Tuple
 
@@ -33,34 +33,51 @@ def _get_color_for_id(obj_id):
     return _COLOR_MAP[obj_id]
 
 
-def draw_boxes(image, boxes):
-    """
-    Draw bounding boxes on the image.
-    Each box gets a unique color based on its coordinates hash.
-    """
-    annotated = image.copy()
-    for box in boxes:
-        # Hash box coordinates to get a stable color
-        obj_id = hash((box.x1, box.y1, box.x2, box.y2)) % 10000
-        color = _get_color_for_id(obj_id)
+def draw_boxes(frame, detections, show_label: bool = True):
+    annotated = frame.copy()
 
-        cv2.rectangle(
-            annotated,
-            (box.x1, box.y1),
-            (box.x2, box.y2),
-            color,
-            2,
-        )
-        label = f"{box.confidence:.2f}"
-        cv2.putText(
-            annotated,
-            label,
-            (box.x1, max(0, box.y1 - 5)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            color,
-            2,
-        )
+    for det in detections:
+        if hasattr(det, "to_dict"):
+            det = det.to_dict()
+
+        # Support both detection and tracking dict formats
+        if "x1" in det:
+            x1, y1, x2, y2 = int(det["x1"]), int(det["y1"]), int(det["x2"]), int(det["y2"])
+        elif "bbox" in det:
+            x1, y1, x2, y2 = map(int, det["bbox"])
+        else:
+            continue
+
+        # Color: use track_id if available, else class_id, else default green
+        if "id" in det and det["id"] is not None and det["id"] >= 0:
+            color = _get_color_for_id(det["id"])
+        elif "class_id" in det:
+            color = _get_color_for_id(det["class_id"])
+        else:
+            color = (0, 255, 0)
+
+        # Draw rectangle
+        cv.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
+
+        # Draw label text
+        if show_label:
+            label_parts = []
+            if "id" in det and det["id"] is not None and det["id"] >= 0:
+                label_parts.append(f"ID {det['id']}")
+            if "label" in det:
+                label_parts.append(str(det["label"]))
+            elif "class_id" in det:
+                label_parts.append(f"cls {det['class_id']}")
+            if "conf" in det:
+                label_parts.append(f"{det['conf']:.2f}")
+
+            if label_parts:
+                label = " | ".join(label_parts)
+                (tw, th), baseline = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                cv.rectangle(annotated, (x1, y1 - th - baseline), (x1 + tw, y1), color, -1)
+                cv.putText(annotated, label, (x1, y1 - baseline),
+                            cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv.LINE_AA)
+
     return annotated
 
 
@@ -79,13 +96,13 @@ def draw_masks(image: np.ndarray, masks: List[Mask], alpha: float = 0.4) -> np.n
         color = _get_color_for_id(obj_id)
 
         pts = np.array(mask.segmentation, dtype=np.int32).reshape((-1, 1, 2))
-        cv2.fillPoly(overlay, [pts], color)
-        cv2.polylines(img, [pts], True, color, 2)
-        cv2.putText(img, f"{mask.confidence:.2f}",
+        cv.fillPoly(overlay, [pts], color)
+        cv.polylines(img, [pts], True, color, 2)
+        cv.putText(img, f"{mask.confidence:.2f}",
                     (pts[0][0][0], pts[0][0][1] - 5),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+                    cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv.LINE_AA)
 
-    return cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0)
+    return cv.addWeighted(overlay, alpha, img, 1 - alpha, 0)
 
 
 def draw_markers(image: np.ndarray, markers: List[Marker]) -> np.ndarray:
@@ -100,11 +117,11 @@ def draw_markers(image: np.ndarray, markers: List[Marker]) -> np.ndarray:
         color = _get_color_for_id(obj_id)
 
         corners = np.array(marker.corners, dtype=np.int32).reshape((-1, 1, 2))
-        cv2.polylines(img, [corners], True, color, 2)
+        cv.polylines(img, [corners], True, color, 2)
         cX = int(np.mean([pt[0] for pt in marker.corners]))
         cY = int(np.mean([pt[1] for pt in marker.corners]))
-        cv2.putText(img, str(marker.id), (cX, cY),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2, cv2.LINE_AA)
+        cv.putText(img, str(marker.id), (cX, cY),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.7, color, 2, cv.LINE_AA)
     return img
 
 
@@ -119,7 +136,7 @@ def draw_qr_codes(image: np.ndarray, qr_codes: List[QRCode]) -> np.ndarray:
         
         # Draw bounding polygon
         corners = np.array(qr_code.corners, dtype=np.int32).reshape((-1, 1, 2))
-        cv2.polylines(img, [corners], True, color, 2)
+        cv.polylines(img, [corners], True, color, 2)
         
         # Calculate top-right position for text
         max_x = max(pt[0] for pt in qr_code.corners)
@@ -130,13 +147,13 @@ def draw_qr_codes(image: np.ndarray, qr_codes: List[QRCode]) -> np.ndarray:
         text_y = min_y - 5
         
         # Draw QR label at top-right
-        cv2.putText(img, "QR", (text_x, text_y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv2.LINE_AA)
+        cv.putText(img, "QR", (text_x, text_y),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv.LINE_AA)
         
         # Draw truncated data below the label
         data_text = qr_code.data[:20] + "..." if len(qr_code.data) > 20 else qr_code.data
-        cv2.putText(img, data_text, (text_x, text_y + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1, cv2.LINE_AA)
+        cv.putText(img, data_text, (text_x, text_y + 20),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1, cv.LINE_AA)
     
     return img
 
@@ -152,7 +169,7 @@ def draw_barcodes(image: np.ndarray, barcodes: List[BarCode]) -> np.ndarray:
         
         # Draw bounding polygon
         corners = np.array(barcode.corners, dtype=np.int32).reshape((-1, 1, 2))
-        cv2.polylines(img, [corners], True, color, 2)
+        cv.polylines(img, [corners], True, color, 2)
         
         # Calculate top-right position for text
         max_x = max(pt[0] for pt in barcode.corners)
@@ -163,12 +180,12 @@ def draw_barcodes(image: np.ndarray, barcodes: List[BarCode]) -> np.ndarray:
         text_y = min_y - 5
         
         # Draw barcode label at top-right
-        cv2.putText(img, "BC", (text_x, text_y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv2.LINE_AA)
+        cv.putText(img, "BC", (text_x, text_y),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv.LINE_AA)
         
         # Draw truncated data below the label
         data_text = barcode.data[:15] + "..." if len(barcode.data) > 15 else barcode.data
-        cv2.putText(img, data_text, (text_x, text_y + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1, cv2.LINE_AA)
+        cv.putText(img, data_text, (text_x, text_y + 20),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1, cv.LINE_AA)
     
     return img
