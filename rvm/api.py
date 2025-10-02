@@ -10,6 +10,7 @@ Provides:
 
 from pathlib import Path
 from typing import List, Dict, Any
+import cv2 as cv
 
 from rvm.detect.yolo import YOLODetector
 from rvm.segment.sam_lite import SamLiteSegmenter
@@ -18,6 +19,7 @@ from rvm.markers.barcodes import BarCodesDetector
 from rvm.core.visualize import draw_boxes, draw_masks, draw_markers, draw_barcodes, draw_qr_codes
 from rvm.io.loader import load_image, load_video, load_webcam
 from rvm.io.writer import save_image, save_json
+from rvm.track.tracker import IoUTracker, UltralyticsTracker
 from eval.coco_eval import evaluate_coco
 
 
@@ -59,9 +61,8 @@ def detect(
             annotated = draw_boxes(frame, detections)
 
             if realtime:
-                import cv2
-                cv2.imshow("RVM Detection (Press q to quit)", annotated)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
+                cv.imshow("RVM Detection (Press q to quit)", annotated)
+                if cv.waitKey(1) & 0xFF == ord("q"):
                     break
 
             for d in detections:
@@ -206,3 +207,86 @@ def coco_eval(pred_file: str, ann_file: str, out_dir: str = "reports") -> Dict[s
         dict: {"precision": float, "recall": float}
     """
     return evaluate_coco(pred_file, ann_file, out_dir)
+
+
+# -----------------------------
+# Tracking
+# -----------------------------
+def track(
+    source: str,
+    model: str = "yolo11n.pt",
+    tracker_type: str = "ultralytics",   # "ultralytics" | "iou"
+    out_dir: str = "results",
+    realtime: bool = False
+) -> List[Dict[str, Any]]:
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Init tracker + detector
+    if tracker_type == "ultralytics":
+        tracker = UltralyticsTracker(model_path=model)
+        detector = None
+    elif tracker_type == "iou":
+        tracker = IoUTracker()
+        from ultralytics import YOLO
+        detector = YOLO(model)
+    else:
+        raise ValueError(f"Unsupported tracker type: {tracker_type}")
+
+    all_results = []
+
+    def process_frame(frame, frame_idx):
+        if tracker_type == "ultralytics":
+            tracks = tracker.update(frame)
+        else:  # iou
+            results = detector(frame)
+            detections = [
+                {
+                    "bbox": [float(x1), float(y1), float(x2), float(y2)],
+                    "score": float(score),
+                    "class": int(cls),
+                }
+                for r in results
+                for (x1, y1, x2, y2, score, cls) in r.boxes.data.cpu().numpy()
+            ]
+            tracks = tracker.update(detections)
+
+        annotated = draw_boxes(frame, tracks)
+        for t in tracks:
+            t["frame"] = frame_idx
+            all_results.append(t)
+        return annotated
+
+    # Webcam
+    if source.isdigit():
+        cap = load_webcam(int(source))
+        frame_idx = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret: break
+            annotated = process_frame(frame, frame_idx)
+            if realtime:
+                cv.imshow("Tracking", annotated)
+                if cv.waitKey(1) & 0xFF == ord("q"): break
+            frame_idx += 1
+        cap.release()
+        save_json(all_results, out_dir / "track_webcam.json")
+
+    # Video
+    elif source.lower().endswith((".mp4", ".mov", ".avi")):
+        cap, writer = load_video(source, out_dir / "track_result.mp4")
+        frame_idx = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret: break
+            annotated = process_frame(frame, frame_idx)
+            writer.write(annotated)
+            frame_idx += 1
+        cap.release(); writer.release()
+        save_json(all_results, out_dir / "track_result.json")
+
+    else:
+        raise ValueError(f"Unsupported source type: {source}")
+
+    return all_results
