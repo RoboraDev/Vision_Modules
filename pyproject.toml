@@ -25,6 +25,7 @@ dependencies = [
 
 [project.scripts]
 rvm-detect = "rvm.cli.detect:main"
+rvm-track = "rvm.cli.track:main"
 rvm-segment = "rvm.cli.segment:main"
 rvm-markers = "rvm.cli.markers:main"
 rvm-eval-coco = "rvm.cli.eval_coco:main"
