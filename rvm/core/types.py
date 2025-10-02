@@ -11,6 +11,7 @@ class Box:
     y2: int
     confidence: float
     class_id: int
+    track_id: int = -1  # Optional, for tracking
 
     def to_dict(self):
         """Convert Box object to dictionary for JSON serialization."""
