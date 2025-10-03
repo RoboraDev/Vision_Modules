@@ -149,18 +149,32 @@ results = detect(
 print(results)
 ```
 
-#### 2. Segmentation
+#### 2. Object Tracking
+```
+from rvm.api import track
+
+tracks = track(
+    source="path/to/video.mp4",    # video file or webcam index
+    tracker="iou",                 # "iou" (lightweight) or "ultralytics" (deep learning)
+    model="yolo11n.pt",            # required if using "ultralytics"
+    out_dir="results/"
+)
+print(tracks)
+```
+
+
+#### 3. Segmentation
 ```python
 from rvm.api import segment
 
 masks = segment(
-    iamge_ơath="path/to/images_dir",
+    image_path= "path/to/images_dir",
     out_dir="results/"
 )
 print(masks[0].shape)
 ```
 
-#### 3. Markers
+#### 4. Markers
 ```python
 from rvm.api import markers
 
@@ -171,7 +185,7 @@ output = markers(
 print(output)
 ```
 
-#### 4. COCO Evaluation
+#### 5. COCO Evaluation
 ```python
 from rvm.api import coco_eval
 
