@@ -4,7 +4,7 @@ Robora Vision Modules is a Python library that provides plug and play vision ski
 
 This repository is part of Robora’s initiative to collaborate with students and researchers from different universities. The goal is to expand the reach of robotics combined with blockchain and create an open environment where knowledge, tools, and real world applications can grow through collaboration.
 
-If you are a student, researcher, or developer, you are welcome to contribute. Fork the repository, make improvements, and submit a pull request. Together we can advance robotics x blockchain and push forward the adoption of physical AI.
+If you are a student, researcher, or developer, you are welcome to contribute. Fork the repository, make improvements, and submit a pull request. Together, we can advance robotics x blockchain and push forward the adoption of physical AI.
 
 ---
 
@@ -41,7 +41,7 @@ Vision_Modules/
 │   ├── segment/
 │   │   └── sam_lite.py       # segmentation wrapper
 │   ├── markers/
-│   │   └── aruco.py          # marker detection
+│   │   ├── aruco.py          # marker detection
     |   └── barcodes.py       # QR Codes & Bar Codes detection
 │   ├── track/
 │   │   └──tracker.py         # tracking wrapper
@@ -128,7 +128,7 @@ pip install -e .
 ### CLI Commands
 ```bash
 rvm-detect --source path_or_webcam --model yolo11n.pt --out results/
-rvm-track --source path_or_webcam  --tracker ultralytics _or_iou --out results/
+rvm-track --source path_or_webcam  --tracker ultralytics_or_iou --out results/
 rvm-segment --source images_dir --out results/
 rvm-markers --source images_dir --out results/
 rvm-eval-coco --images images_dir --ann annotations.json --out reports/
