@@ -9,7 +9,8 @@ If you are a student, researcher, or developer, you are welcome to contribute. F
 ---
 
 ## ✨ Features
-- **Object Detection** (YOLOv11 wrapper)  
+- **Object Detection** (YOLOv11 wrapper)
+- **Object Tracking**  
 - **Image Segmentation** (SAM-lite or similar lightweight segmenter)  
 - **Marker / Barcode Detection** (ArUco or QR)  
 - **Unified Python API** for simple usage  
@@ -26,6 +27,12 @@ Vision_Modules/
 ├── rvm/
 │   ├── __init__.py
 │   ├── api.py                # unified high-level API
+│   ├──cli/
+│   │   ├── detect.py
+│   │   ├── eval_coco.py
+│   │   ├── markers.py
+│   │   ├── segment.py
+│   │   └── track.py
 │   ├── core/
 │   │   ├── types.py          # dataclasses for boxes, masks, markers
 │   │   └── visualize.py      # drawing utilities
@@ -36,9 +43,12 @@ Vision_Modules/
 │   ├── markers/
 │   │   └── aruco.py          # marker detection
     |   └── barcodes.py       # QR Codes & Bar Codes detection
+│   ├── track/
+│   │   └──tracker.py         # tracking wrapper
 │   └── io/
 │       ├── loader.py         # image, video, webcam loading
 │       └── writer.py         # save JSON + annotated media
+|
 ├── demos/
 │   ├── detect_webcam.py
 │   ├── detect_video.py
@@ -118,6 +128,7 @@ pip install -e .
 ### CLI Commands
 ```bash
 rvm-detect --source path_or_webcam --model yolo11n.pt --out results/
+rvm-track --source path_or_webcam  --tracker ultralytics _or_iou --out results/
 rvm-segment --source images_dir --out results/
 rvm-markers --source images_dir --out results/
 rvm-eval-coco --images images_dir --ann annotations.json --out reports/
