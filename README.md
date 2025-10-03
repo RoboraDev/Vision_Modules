@@ -42,7 +42,7 @@ Vision_Modules/
 │   │   └── sam_lite.py       # segmentation wrapper
 │   ├── markers/
 │   │   ├── aruco.py          # marker detection
-    |   └── barcodes.py       # QR Codes & Bar Codes detection
+│   |   └── barcodes.py       # QR Codes & Bar Codes detection
 │   ├── track/
 │   │   └──tracker.py         # tracking wrapper
 │   └── io/
