@@ -54,15 +54,19 @@ Vision_Modules/
 │   ├── detect_video.py
 │   ├── segment_image.py
 │   └── markers_image.py
+│
 ├── eval/
-│   └── coco_eval.py          # detection metrics + report.html
+│   └── coco_eval.py       # detection metrics + report.html
+│
 ├── tests/
 │   ├── test_api_smoke.py
 │   ├── test_visualize.py
 │   └── test_coco_eval.py
+│
 ├── samples/
 │   ├── shelf.jpg
 │   └── tags.png
+│
 └── .github/
     └── workflows/
         └── ci.yml            # CI pipeline: run tests on push
