@@ -26,7 +26,7 @@ def main():
         help="Tracking backend: 'iou' (lightweight CPU) or 'ultralytics' (stronger)."
     )
     parser.add_argument(
-        "--out",
+        "--out_dir",
         type=str,
         default="results",
         help="Directory to save outputs (default: results)."
