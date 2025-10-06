@@ -207,14 +207,16 @@ print(metrics)
 ## 🎥 Demos
 We provide simple demo scripts for quick testing:
 
-- `demos/detect_webcam.py` → run YOLO detection live from webcam  
+- `demos/detect_webcam.py` → run YOLO detection live from webcam
+- `demos/tracking.py`      → run object tracking live from webcam
 - `demos/detect_video.py`  → detect objects in video, save annotated MP4 + JSON  
 - `demos/segment_image.py` → run SAM-lite segmentation on an image  
 - `demos/markers_image.py` → detect QR/ArUco markers in image  
 
 Example:
 ```bash
-python demos/detect_webcam.py --model yolo11n.pt
+python demos/detect_webcam.py
+python demos/tracking.py
 ```
 
 ---
