@@ -189,3 +189,22 @@ def draw_barcodes(image: np.ndarray, barcodes: List[BarCode]) -> np.ndarray:
                     cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1, cv.LINE_AA)
     
     return img
+
+
+def draw_pose_axes(image: np.ndarray, rvec, tvec, camera_matrix, dist_coeffs, length: float = 0.05):
+    """
+    Draw 3D coordinate axes for the given pose.
+    """
+    img = image.copy()
+    try:
+        cv.drawFrameAxes(   # <--- sửa cv2 -> cv
+            img,
+            np.array(camera_matrix, dtype=float),
+            np.array(dist_coeffs, dtype=float),
+            np.array(rvec, dtype=float).reshape(3, 1),
+            np.array(tvec, dtype=float).reshape(3, 1),
+            length
+        )
+    except Exception as e:
+        print(f"[WARN] draw_pose_axes failed: {e}")  # để dễ debug
+    return img
