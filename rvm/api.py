@@ -16,10 +16,12 @@ from rvm.detect.yolo import YOLODetector
 from rvm.segment.sam_lite import SamLiteSegmenter
 from rvm.markers.aruco import ArucoDetector
 from rvm.markers.barcodes import BarCodesDetector
-from rvm.core.visualize import draw_boxes, draw_masks, draw_markers, draw_barcodes, draw_qr_codes
+from rvm.core.visualize import draw_boxes, draw_masks, draw_markers, draw_barcodes, draw_qr_codes, draw_pose_axes
 from rvm.io.loader import load_image, load_video, load_webcam
 from rvm.io.writer import save_image, save_json
 from rvm.track.tracker import IoUTracker, UltralyticsTracker
+from rvm.markers.pose import PoseEstimator
+from rvm.io.calib import load_camera_calibration
 from eval.coco_eval import evaluate_coco
 
 
@@ -290,3 +292,36 @@ def track(
         raise ValueError(f"Unsupported source type: {source}")
 
     return all_results
+
+# -----------------------------
+# Marker Pose Estimation
+# -----------------------------
+def detect_marker_poses(image_path: str, camera_calib: str = None, marker_size: float = 0.05, out: str = "results"):
+    """
+    Detect ArUco markers and estimate their 6DoF poses using solvePnP.
+    """
+    img = load_image(image_path)
+    detector = ArucoDetector()
+    markers = detector.detect(img)
+
+    if camera_calib:
+        K, dist = load_camera_calibration(camera_calib)
+    else:
+        h, w = img.shape[:2]
+        f = max(h, w)
+        K = np.array([[f, 0, w / 2], [0, f, h / 2], [0, 0, 1]], dtype=float)
+        dist = np.zeros((5,))
+
+    estimator = PoseEstimator(marker_size_m=marker_size)
+    poses = estimator.estimate_from_markers(markers, K, dist)
+
+    annotated = img.copy()
+    for pose in poses:
+        if pose.success:
+            annotated = draw_pose_axes(annotated, pose.rvec, pose.tvec, K, dist, length=marker_size * 0.5)
+
+    out_dir = Path(out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_image(annotated, out_dir, "markers_pose.jpg")
+    save_json([p.to_dict() for p in poses], out_dir / "markers_pose.json")
+    return poses
