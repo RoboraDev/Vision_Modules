@@ -161,7 +161,7 @@ print(results)
 ```
 
 #### 2. Object Tracking
-```
+```python
 from rvm.api import track
 
 tracks = track(
