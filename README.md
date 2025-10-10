@@ -12,7 +12,8 @@ If you are a student, researcher, or developer, you are welcome to contribute. F
 - **Object Detection** (YOLOv11 wrapper)
 - **Object Tracking**  
 - **Image Segmentation** (SAM-lite or similar lightweight segmenter)  
-- **Marker / Barcode Detection** (ArUco or QR)  
+- **Marker / Barcode Detection** (ArUco or QR)
+- **Pose Estimation**
 - **Unified Python API** for simple usage  
 - **Command-line tools (CLI)** for quick demos  
 - **Tiny evaluation script** for COCO-style datasets  
@@ -32,6 +33,7 @@ Vision_Modules/
 │   │   ├── eval_coco.py
 │   │   ├── markers.py
 │   │   ├── segment.py
+│   │   ├── pose.py
 │   │   └── track.py
 │   ├── core/
 │   │   ├── types.py          # dataclasses for boxes, masks, markers
@@ -42,7 +44,8 @@ Vision_Modules/
 │   │   └── sam_lite.py       # segmentation wrapper
 │   ├── markers/
 │   │   ├── aruco.py          # marker detection
-│   |   └── barcodes.py       # QR Codes & Bar Codes detection
+│   │   ├── barcodes.py       # QR Codes & Bar Codes detection
+│   │   └── pose.py
 │   ├── track/
 │   │   └──tracker.py         # tracking wrapper
 │   └── io/
@@ -53,7 +56,9 @@ Vision_Modules/
 │   ├── detect_webcam.py
 │   ├── detect_video.py
 │   ├── segment_image.py
-│   └── markers_image.py
+│   ├── markers_image.py
+│   ├── markers_pose.py
+│   └── tracking.py
 │
 ├── eval/
 │   └── coco_eval.py       # detection metrics + report.html
@@ -61,6 +66,7 @@ Vision_Modules/
 ├── tests/
 │   ├── test_api_smoke.py
 │   ├── test_visualize.py
+│   ├── test_pose.py
 │   └── test_coco_eval.py
 │
 ├── samples/
@@ -135,6 +141,7 @@ rvm-detect --source path_or_webcam --model yolo11n.pt --out results/
 rvm-track --source path_or_webcam  --tracker ultralytics_or_iou --out results/
 rvm-segment --source images_dir --out results/
 rvm-markers --source images_dir --out results/
+rvm-pose --image path_to_image --calib path_to_cali_results --marker-size 0.05 --out results/
 rvm-eval-coco --images images_dir --ann annotations.json --out reports/
 ```
 
@@ -166,7 +173,6 @@ tracks = track(
 print(tracks)
 ```
 
-
 #### 3. Segmentation
 ```python
 from rvm.api import segment
@@ -177,6 +183,7 @@ masks = segment(
 )
 print(masks[0].shape)
 ```
+
 
 #### 4. Markers
 ```python
@@ -189,7 +196,20 @@ output = markers(
 print(output)
 ```
 
-#### 5. COCO Evaluation
+#### 5. Pose Estimation
+```python
+from rvm.api import detect_marker_poses
+
+poses = detect_marker_poses(
+    image_path="path/to/iimages_dir",   
+    camera_calib="data/camera_calib.yaml",         
+    marker_size=0.05,                          
+    out="results/"                                
+)
+print(poses)
+```
+  
+#### 6. COCO Evaluation
 ```python
 from rvm.api import coco_eval
 
@@ -207,11 +227,13 @@ print(metrics)
 ## 🎥 Demos
 We provide simple demo scripts for quick testing:
 
+- `demos/detect_video.py`  → run YOLO detection from video
 - `demos/detect_webcam.py` → run YOLO detection live from webcam
 - `demos/tracking.py`      → run object tracking live from webcam
 - `demos/detect_video.py`  → detect objects in video, save annotated MP4 + JSON  
 - `demos/segment_image.py` → run SAM-lite segmentation on an image  
-- `demos/markers_image.py` → detect QR/ArUco markers in image  
+- `demos/markers_image.py` → detect QR/ArUco markers in image
+- `demos/marker_pose.py`   → run pose estimation
 
 Example:
 ```bash
