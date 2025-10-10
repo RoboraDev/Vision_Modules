@@ -28,7 +28,7 @@ Vision_Modules/
 ├── rvm/
 │   ├── __init__.py
 │   ├── api.py                # unified high-level API
-│   ├──cli/
+│   ├── cli/
 │   │   ├── detect.py
 │   │   ├── eval_coco.py
 │   │   ├── markers.py
