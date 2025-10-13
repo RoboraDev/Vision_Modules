@@ -11,6 +11,7 @@ Provides:
 from pathlib import Path
 from typing import List, Dict, Any
 import cv2 as cv
+import numpy as np
 
 from rvm.detect.yolo import YOLODetector
 from rvm.segment.sam_lite import SamLiteSegmenter
@@ -133,7 +134,17 @@ def segment_image(image_path: str, out_dir: str = "results") -> List[Dict[str, A
 # -----------------------------
 # Marker detection
 # -----------------------------
-def detect_markers(image_path: str, out_dir: str = "results") -> List[Dict[str, Any]]:
+def detect_markers(image_path: str, out_dir: str = "results") -> Dict[str, Any]:
+    """
+    Detect ArUco markers and barcodes/QR codes in an image.
+
+    Returns:
+        dict with keys:
+            - detection_summary: dict (image_path, totals)
+            - aruco_markers: list of marker dicts
+            - qr_codes: list of qr dicts
+            - barcodes: list of barcode dicts
+    """
     img = load_image(image_path)
     detector_aruco = ArucoDetector()
     markers = detector_aruco.detect(img)
@@ -185,9 +196,6 @@ def detect_markers(image_path: str, out_dir: str = "results") -> List[Dict[str, 
         ]
     }
 
-
-    # save_json([m.to_dict() for m in markers], out_dir / "markers_result.json")
-    # return [m.to_dict() for m in markers]
     save_json(results, out_dir / "markers_result.json")
     return results
     
@@ -296,7 +304,7 @@ def track(
 # -----------------------------
 # Marker Pose Estimation
 # -----------------------------
-def detect_marker_poses(image_path: str, camera_calib: str = None, marker_size: float = 0.05, out: str = "results"):
+def detect_marker_poses(image_path: str, camera_calib: str = None, marker_size: float = 0.05, out_dir: str = "results"):
     """
     Detect ArUco markers and estimate their 6DoF poses using solvePnP.
     """
@@ -320,7 +328,7 @@ def detect_marker_poses(image_path: str, camera_calib: str = None, marker_size: 
         if pose.success:
             annotated = draw_pose_axes(annotated, pose.rvec, pose.tvec, K, dist, length=marker_size * 0.5)
 
-    out_dir = Path(out)
+    out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     save_image(annotated, out_dir, "markers_pose.jpg")
     save_json([p.to_dict() for p in poses], out_dir / "markers_pose.json")
