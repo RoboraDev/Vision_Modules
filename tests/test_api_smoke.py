@@ -34,4 +34,6 @@ def test_detect_markers_smoke(tmp_path):
     cv2.imwrite(str(img_path), img)
 
     results = api.detect_markers(str(img_path), out_dir=tmp_path)
-    assert isinstance(results, list)
+    assert isinstance(results, dict)
+    for key in ["detection_summary", "aruco_markers", "qr_codes", "barcodes"]:
+        assert key in results
