@@ -9,5 +9,5 @@ if __name__ == "__main__":
     parser.add_argument("--out", default="results")
     args = parser.parse_args()
 
-    poses = detect_marker_poses(args.image, camera_calib=args.calib, marker_size=args.marker_size, out=args.out)
+    poses = detect_marker_poses(args.image, camera_calib=args.calib, marker_size=args.marker_size, out_dir=args.out)
     print("Detected poses:", poses)
